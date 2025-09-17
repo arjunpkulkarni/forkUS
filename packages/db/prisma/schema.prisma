@@ -1,60 +1,104 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19rcW9DN0ZLMzN0ME5PaE9wSUtNQjIiLCJhcGlfa2V5IjoiMDFLNUNUTjU3M0RCWjNYUEs4SkZYSEI1NE4iLCJ0ZW5hbnRfaWQiOiIzOGM5MTk2YmZjNzczMjkzYWMwYTFkM2FlNjg2YjQyMzliY2IzYzYwZTc0MTEwNDBkMzIyNmY1ZTZhYzJlMjc3IiwiaW50ZXJuYWxfc2VjcmV0IjoiNDMzMDFlM2MtY2ZkNy00MGMyLTk2YWQtM2Y4MGZhM2EwNzgwIn0.YbOVbUCkzOxMDKgxqd0KooOjBNnFPEp9eG3fr62MCb8"
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Bookings  Booking[]
+  id           String       @id @default(cuid())
+  name         String?
+  email        String       @unique
+  image        String?
+  role         Role         @default(CUSTOMER)
+  restaurants  Restaurant[]
+  bookings     Booking[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  OWNER
+  ADMIN
 }
 
 model Restaurant {
-  id          String    @id @default(cuid())
-  name        String
-  address     String
-  city        String
-  capacity    Int
-  slots       Slot[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String     @id @default(cuid())
+  ownerId      String
+  owner        User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String?     @unique
+  phone        String?
+  street       String
+  city         String
+  state        String
+  zip          String
+  cuisine      String
+  priceTier    Int
+  heroImage    String?
+  openingJson  Json?
+  dealSlots    DealSlot[]
+  bookings     Booking[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
-model Slot {
-  id            String     @id @default(cuid())
-  restaurantId  String
-  startTime     DateTime
-  endTime       DateTime
-  discountPct   Int        @default(0)
-  capacity      Int
-  bookings      Booking[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  Restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+model DealSlot {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  startTime      DateTime
+  endTime        DateTime
+  discountPct    Int
+  seatsTotal     Int
+  seatsRemaining Int
+  minParty       Int        @default(1)
+  maxParty       Int        @default(8)
+  status         DealStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  bookings       Booking[]
+
+  @@index([restaurantId, startTime, endTime, status])
+  @@index([startTime])
+}
+
+enum DealStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
 }
 
 model Booking {
-  id         String   @id @default(cuid())
-  userId     String
-  slotId     String
-  partySize  Int
-  status     BookingStatus @default(PENDING)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  User       User     @relation(fields: [userId], references: [id])
-  Slot       Slot     @relation(fields: [slotId], references: [id])
+  id           String        @id @default(cuid())
+  code         String        @unique
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dealSlotId   String
+  dealSlot     DealSlot      @relation(fields: [dealSlotId], references: [id], onDelete: Cascade)
+  partySize    Int
+  status       BookingStatus @default(CONFIRMED)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  NO_SHOW
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
