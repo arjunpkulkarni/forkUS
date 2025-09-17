@@ -1,0 +1,26 @@
+{
+  "name": "@fork-us/db",
+  "type": "module",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prisma:generate": "prisma generate --no-engine",
+    "prisma:migrate": "prisma migrate dev",
+    "clean": "rimraf dist",
+    "prepare": "npm run prisma:generate"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "@prisma/extension-accelerate": "^2.0.2",
+    "prisma": "^6.16.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  },
+  "rimraf": "^5.0.10"
+}

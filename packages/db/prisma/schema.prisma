@@ -1,0 +1,60 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Bookings  Booking[]
+}
+
+model Restaurant {
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  capacity    Int
+  slots       Slot[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Slot {
+  id            String     @id @default(cuid())
+  restaurantId  String
+  startTime     DateTime
+  endTime       DateTime
+  discountPct   Int        @default(0)
+  capacity      Int
+  bookings      Booking[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  Restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  userId     String
+  slotId     String
+  partySize  Int
+  status     BookingStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User     @relation(fields: [userId], references: [id])
+  Slot       Slot     @relation(fields: [slotId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}

@@ -1,0 +1,13 @@
+node_modules
+.env
+.env*
+.next
+dist
+build
+.expo
+.DS_Store
+.expo-shared
+*.log
+coverage
+.prisma
+

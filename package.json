@@ -1,0 +1,25 @@
+{
+  "name": "fork-us",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npm run dev -w apps/web",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:mobile": "npm run ios -w apps/mobile",
+    "build:web": "npm run build -w apps/web",
+    "lint:web": "npm run lint -w apps/web",
+    "db:generate": "npm run prisma:generate -w packages/db",
+    "db:migrate": "npm run prisma:migrate -w packages/db",
+    "postinstall": "npm run db:generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
